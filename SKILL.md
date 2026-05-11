@@ -8,7 +8,7 @@ metadata:
   author: "@mr-r0b0t on X — r0b0tlab"
   platform: gb10, dgx-spark, arm64
   models-supported: flux, sd3.5, wan-2.2, qwen-image, hunyuan3d
-  repo: https://github.com/mr-r0b0t/gb10-comfyui-hermes-r0b0tlab
+  repo: https://github.com/r0b0tlab/gb10-comfyui-hermes-r0b0tlab
 ---
 
 # GB10 ComfyUI — Hermes Agent Skill
