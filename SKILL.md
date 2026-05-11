@@ -4,10 +4,10 @@ description: Deploy and operate ComfyUI on NVIDIA GB10 / DGX Spark (sm_121 Black
 license: MIT
 compatibility: Requires NVIDIA GB10 (DGX Spark, Gigabyte AI TOP) or any Grace-Blackwell sm_121 system with Docker + NVIDIA Container Toolkit. ComfyUI models require HuggingFace access. Python 3.10+ needed for skill scripts.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   author: "@mr-r0b0t on X — r0b0tlab"
   platform: gb10, dgx-spark, arm64
-  models-supported: flux2-klein, flux.1, sdxl, ernie-image, wan-2.2, qwen-image, hunyuan3d, nvfp4
+  models-supported: flux.1, sdxl, sd3.5, flux2-klein, flux2-dev, nvfp4
   repo: https://github.com/r0b0tlab/gb10-comfyui-hermes-r0b0tlab
 ---
 
@@ -144,8 +144,9 @@ docker exec comfyui python3 convert_fp8_to_nvfp4.py \
 **Requirements:** Blackwell GPU, PyTorch cu130 (in Docker), comfy_kitchen ≥ 0.2.7.
 **Never use NVFP4 without cu130 PyTorch** — runs 2× slower.
 
-Full publishing plan: wiki/projects/comfyui-gb10/nvfp4-publishing-plan.md
-Conversion script: ComfyUI issue #11822
+**NVFP4 Compatibility:** Works with CheckpointLoaderSimple (FLUX.1 Dev, SDXL, SD3.5).
+Breaks UNETLoader for FLUX.2 [klein] 4B (produces static). FLUX.2 [dev] 32B
+appears to work with UNETLoader.
 
 ## Utility Nodes
 

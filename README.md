@@ -6,13 +6,20 @@ An [Agent Skills](https://agentskills.io) compliant skill for deploying and
 operating ComfyUI on NVIDIA GB10 / DGX Spark hardware, with Hermes Agent
 integration for automated content generation.
 
-## What This Skill Does
+## Verified Models (All Producing Output on GB10)
 
-- Installs ComfyUI optimized for GB10 (Grace-Blackwell, sm_121, ARM64, 128GB unified memory)
-- Downloads the right models — FLUX.1 Krea, SD3.5, Wan 2.2, Qwen-Image, Hunyuan3D
-- Runs batch image generation, video creation, and 3D asset pipelines
-- Automates viral content workflows (AI influencer, memes, upscale + repurpose)
-- Integrates with Hermes Agent for cron-scheduled content drops and Telegram delivery
+| Model | Format | Loader | Steps | CFG | Image |
+|-------|--------|--------|-------|-----|-------|
+| FLUX.1 Dev | NVFP4 | CheckpointLoaderSimple | 50 | 3.5 | [pug](assets/pug_flux1_dev.png) |
+| SDXL Base | NVFP4 | CheckpointLoaderSimple | 30 | 7.0 | [pug](assets/pug_sdxl.png) |
+| SD3.5 Large | NVFP4 | CheckpointLoaderSimple + DualCLIPLoader | 25 | 4.0 | [pug](assets/pug_sd35.png) |
+| FLUX.2 klein 4B | FP8 | UNETLoader + CLIPLoader(type=flux2, qwen) | 4 | 1.0 | [pug](assets/pug_klein.png) |
+| FLUX.2 dev 32B | NVFP4 | UNETLoader + CLIPLoader(type=flux2, mistral) | 50 | 1.0 | [pug](assets/pug_dev.png) |
+
+**NVFP4 Compatibility:** NVFP4 metadata works with CheckpointLoaderSimple (FLUX.1, SDXL, SD3.5)
+but breaks UNETLoader for FLUX.2 klein 4B. FLUX.2 dev 32B with UNETLoader works.
+
+All models published at https://huggingface.co/r0b0tlab with verified configs.
 
 ## Quick Start
 
@@ -22,47 +29,34 @@ git clone https://github.com/luix93/DGX-Spark-ComfyUI.git && cd DGX-Spark-ComfyU
 cp .env.example .env   # edit paths
 docker compose up --build -d
 
-# 2. Download models
-comfy model download --url "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors" --relative-path models/checkpoints
+# 2. Download models from HuggingFace
+# Models at https://huggingface.co/r0b0tlab
 
 # 3. Generate
-python3 <skill-dir>/scripts/run_workflow.py --workflow workflows/flux_dev_txt2img.json --args '{"prompt": "a test", "steps": 4}' --output-dir ./outputs
+curl -X POST http://localhost:8188/api/prompt -H "Content-Type: application/json" -d '{"prompt": {...}}'
 ```
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `SKILL.md` | Main skill — install, flags, models, quick workflows |
-| `references/gb10-optimization.md` | Complete flags reference, env vars, volume mounts, pitfall details |
-| `references/workflows.md` | Full viral content recipes with examples and parameters |
+| `SKILL.md` | Main skill — install, flags, models, verified settings |
+| `references/gb10-optimization.md` | Full flags reference, env vars, volume mounts, pitfalls |
+| `references/workflows.md` | Viral content workflow recipes |
+| `assets/` | Verified model output images |
 | `LICENSE` | MIT |
 
 ## Hardware
 
 Built for the NVIDIA GB10 (DGX Spark, Gigabyte AI TOP):
 - Grace-Blackwell superchip (sm_121)
-- 128GB unified LPDDR5x memory (CPU + GPU shared)
-- ARM64 (aarch64) architecture
-- CUDA 13.0+, PyTorch cu130+
-- Docker with NVIDIA Container Toolkit
-
-The 128GB unified memory means you can load every major model simultaneously.
-A 28GB Wan 2.2 video model + 12GB FLUX.1 + 6.5GB SD3.5 = 46.5GB — barely
-a third of available memory.
-
-## Agent Skills Compliance
-
-This skill follows the [Agent Skills specification](https://agentskills.io/specification):
-- `SKILL.md` with required `name` and `description` frontmatter
-- Progressive disclosure: references loaded on demand
-- Under 500 lines in main SKILL.md
-- Valid name: lowercase, hyphens, matches directory
+- 128GB unified LPDDR5x memory
+- ARM64 (aarch64), CUDA 13.0+, PyTorch cu130+
 
 ## Credits
 
-- **[@mr-r0b0t](https://x.com/mr-r0b0t) — r0b0tlab** — GB10 optimization, skill packaging, viral workflow recipes
-- **luix93** — DGX-Spark-ComfyUI Docker setup (https://github.com/luix93/DGX-Spark-ComfyUI)
-- **martimramos** — DGX Spark ML Guide (https://github.com/martimramos/dgx-spark-ml-guide)
-- **ComfyUI team** — ComfyUI and comfy-cli (https://github.com/comfyanonymous/ComfyUI)
+- **[@mr-r0b0t](https://x.com/mr-r0b0t) — r0b0tlab** — GB10 optimization, skill packaging, verified model outputs
+- **luix93** — DGX-Spark-ComfyUI Docker setup
+- **martimramos** — DGX Spark ML Guide
+- **ComfyUI team** — ComfyUI and comfy-cli
 - **Hermes Agent** — Agent framework by Nous Research
