@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires NVIDIA GB10 (DGX Spark, Gigabyte AI TOP) or any Grace-Blackwell sm_121 system with Docker + NVIDIA Container Toolkit. ComfyUI models require HuggingFace access. Python 3.10+ needed for skill scripts.
 metadata:
   version: "1.0.0"
-  author: mr-r0b0t (r0b0tlab)
+  author: "@mr-r0b0t on X — r0b0tlab"
   platform: gb10, dgx-spark, arm64
   models-supported: flux, sd3.5, wan-2.2, qwen-image, hunyuan3d
   repo: https://github.com/mr-r0b0t/gb10-comfyui-hermes-r0b0tlab

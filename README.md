@@ -1,5 +1,7 @@
 # GB10 ComfyUI — Hermes Agent Skill
 
+> **[@mr-r0b0t](https://x.com/mr-r0b0t) on X** — r0b0tlab
+
 An [Agent Skills](https://agentskills.io) compliant skill for deploying and
 operating ComfyUI on NVIDIA GB10 / DGX Spark hardware, with Hermes Agent
 integration for automated content generation.
@@ -59,8 +61,8 @@ This skill follows the [Agent Skills specification](https://agentskills.io/speci
 
 ## Credits
 
+- **[@mr-r0b0t](https://x.com/mr-r0b0t) — r0b0tlab** — GB10 optimization, skill packaging, viral workflow recipes
 - **luix93** — DGX-Spark-ComfyUI Docker setup (https://github.com/luix93/DGX-Spark-ComfyUI)
 - **martimramos** — DGX Spark ML Guide (https://github.com/martimramos/dgx-spark-ml-guide)
 - **ComfyUI team** — ComfyUI and comfy-cli (https://github.com/comfyanonymous/ComfyUI)
 - **Hermes Agent** — Agent framework by Nous Research
-- **r0b0tlab** — GB10 optimization, skill packaging, viral workflow recipes
