@@ -4,10 +4,10 @@ description: Deploy and operate ComfyUI on NVIDIA GB10 / DGX Spark (sm_121 Black
 license: MIT
 compatibility: Requires NVIDIA GB10 (DGX Spark, Gigabyte AI TOP) or any Grace-Blackwell sm_121 system with Docker + NVIDIA Container Toolkit. ComfyUI models require HuggingFace access. Python 3.10+ needed for skill scripts.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "@mr-r0b0t on X — r0b0tlab"
   platform: gb10, dgx-spark, arm64
-  models-supported: flux, sd3.5, wan-2.2, qwen-image, hunyuan3d
+  models-supported: flux.1, flux.2, sdxl, ernie-image, wan-2.2, qwen-image, hunyuan3d, nvfp4
   repo: https://github.com/r0b0tlab/gb10-comfyui-hermes-r0b0tlab
 ---
 
@@ -63,30 +63,71 @@ export OMP_NUM_THREADS=20                 # match Grace CPU cores
 
 ## Model Download Priority
 
-Download in this order. All fit simultaneously on GB10.
+**Important:** Model availability varies. FLUX.2 and ERNIE-Image are diffusers-format
+(loaded via `from_pretrained()`, not single `.safetensors`) — they need custom ComfyUI
+nodes. SD3.5 Large is gated (requires HuggingFace access approval). The verified
+models below work with stock ComfyUI `CheckpointLoaderSimple`.
 
-**Tier 1 — workhorses (download immediately):**
-1. FLUX.1 Krea [dev] (~12 GB) — "opinionated" diverse images, best for creative
-2. FLUX.1 Dev fp8 (~12 GB) — balanced quality/speed
-3. SD3.5 Large (~6.5 GB) — strong all-rounder, TensorRT-optimizable
-
-**Tier 2 — specialized:**
-4. Wan 2.2 14B (~28 GB) — video generation (only GB10 runs 14B without delay)
-5. Qwen-Image (~8 GB) — multilingual text rendering for memes/infographics
-6. Hunyuan3D 2.1 (~8 GB) — text/image → 3D assets with PBR materials
-7. SDXL Base (~6.5 GB) — fast light model for batch experiments
+**Tier 1 — Verified working (download today):**
 
 ```bash
-# Flux Dev fp8
-comfy model download \
-  --url "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors" \
-  --relative-path models/checkpoints
+# FLUX.1 Dev fp8 (~17 GB) — Comfy-Org community repack
+wget --header="Authorization: Bearer $HF_TOKEN" \
+  -O models/checkpoints/flux1-dev-fp8.safetensors \
+  "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors"
 
-# SD3.5 Large
-comfy model download \
-  --url "https://huggingface.co/stabilityai/stable-diffusion-3.5-large/resolve/main/sd3.5_large.safetensors" \
-  --relative-path models/checkpoints
+# SDXL Base 1.0 (~6.5 GB) — public, ungated
+wget --header="Authorization: Bearer $HF_TOKEN" \
+  -O models/checkpoints/sd_xl_base_1.0.safetensors \
+  "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors"
+
+# SDXL VAE (~320 MB) — required for SDXL
+wget --header="Authorization: Bearer $HF_TOKEN" \
+  -O models/vae/sdxl_vae.safetensors \
+  "https://huggingface.co/stabilityai/sdxl-vae/resolve/main/diffusion_pytorch_model.safetensors"
 ```
+
+**Tier 1b — Current-generation (diffusers format, needs custom ComfyUI node):**
+
+| Model | Size | Best For | License |
+|-------|------|----------|---------|
+| FLUX.2 [klein] 4B | ~8 GB | Sub-second generation, real-time apps | Apache 2.0 |
+| FLUX.2 [klein] 9B | ~16 GB | Higher quality, step-distilled | Non-commercial |
+| ERNIE-Image-Turbo | ~16 GB | SOTA text rendering, 8-step | Apache 2.0 |
+
+These models use HuggingFace diffusers pipelines and cannot be loaded by stock
+ComfyUI. Monitor https://github.com/Comfy-Org/ComfyUI for custom node support.
+
+**⚠️ Gated (needs HF access approval):**
+
+| Model | Size | Status |
+|-------|------|--------|
+| SD3.5 Large | 6.5 GB | Visit https://huggingface.co/stabilityai/stable-diffusion-3.5-large |
+
+**Tier 2 — Specialized (when available):**
+
+| Model | Size | Best For |
+|-------|------|----------|
+| Wan 2.2 14B | 28 GB | Video generation (T2V, I2V, FLF2V) |
+| Qwen-Image | 8 GB | Multilingual text rendering (NVFP4 version available) |
+| Hunyuan3D 2.1 | 8 GB | Text/image → 3D assets with PBR |
+
+## NVFP4 Conversion (Blackwell GPUs — 2× faster, 50% smaller)
+
+NVFP4 uses Blackwell FP4 tensor cores. Convert FP8 ComfyUI checkpoints to NVFP4:
+
+```bash
+# Inside the Docker container
+docker exec comfyui python3 convert_fp8_to_nvfp4.py \
+  --input /opt/ComfyUI/models/checkpoints/flux1-dev-fp8.safetensors \
+  --output /opt/ComfyUI/models/checkpoints/flux1-dev-nvfp4.safetensors
+```
+
+**Requirements:** Blackwell GPU, PyTorch cu130 (in Docker), comfy_kitchen ≥ 0.2.7.
+**Never use NVFP4 without cu130 PyTorch** — runs 2× slower.
+
+Full conversion script: see the `nvfp4-convert` Hermes skill or
+ComfyUI issue #11822 (https://github.com/Comfy-Org/ComfyUI/issues/11822).
 
 ## Utility Nodes
 
